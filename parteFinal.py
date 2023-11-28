@@ -495,3 +495,5 @@ Precisa implementar as funcionalidades depois da pessoa logar.
 Até próxima quinta...
 Quinta tem banco de dados com python
 '''
+
+#comentario da sorte, se voce leu eh porque deu certo
