@@ -12,6 +12,8 @@ import requests
 
 from bs4 import BeautifulSoup
 
+import hashlib
+
 class Pessoa:
 
     _quantPessoas = 0
@@ -237,21 +239,33 @@ class LoginPage(QMainWindow):
         email = self.mainPage.email_or_phone.text()
         senha = self.mainPage.password.text()
 
+        senha_hash = hashlib.md5(senha.encode()).hexdigest()
+
         conexao = self.conectar_banco()
         cursor = conexao.cursor()
 
         query = "SELECT * FROM usuarios WHERE email = %s AND senha = %s;"
-        cursor.execute(query, (email, senha))
+        cursor.execute(query, (email, senha_hash))
         usuario = cursor.fetchone()
-
         cursor.close()
         conexao.close()
 
-        if usuario:
-            self.stacked_widget.setCurrentIndex(2)
-            QMessageBox.warning(self, 'Login', 'Login realizado com sucesso')
+        if usuario == True:
+            recebe = self.Autentica(usuario, senha_hash)
+            if recebe == True:
+                self.telaDeBusca()
+                QMessageBox.warning(self, 'Login', 'Login realizado com sucesso')
+            else:
+                QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
         else:
             QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
+
+    def Autentica(self, usuario, senha_hash):
+        senha_digitada = usuario[4]
+        if (senha_digitada == senha_hash):
+            return True
+        else:
+            return False
 
     def callback_exit(self):
         exit(1)
@@ -322,7 +336,7 @@ class LoginPage(QMainWindow):
                                 conexao = self.conectar_banco()
                                 cursor = conexao.cursor()
 
-                                insert_query = "INSERT INTO usuarios (first_name, second_name, email, senha, dia, mes, ano) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                                insert_query = "INSERT INTO usuarios (first_name, second_name, email, senha, dia, mes, ano) VALUES (%s, %s, %s, md5(%s), %s, %s, %s)"
                                 user_data = (first_name, second_name, email_or_phone, password, dia, mes, ano)
                                 cursor.execute(insert_query, user_data)
 
