@@ -36,15 +36,6 @@ class Pessoa:
 
             return False
 
-    # def verificaLogin(self, email, senha):
-    #
-    #     if senha == self._senha and email == self._email:
-    #
-    #         return True
-    #     else:
-    #
-    #         return False
-
     @property
     def firstName(self):
         return self._firstName
