@@ -1,7 +1,5 @@
 import socket
 import threading
-import time
-from PyQt5.QtWidgets import QApplication
 import mysql.connector
 
 class ClientThread(threading.Thread):
@@ -59,7 +57,7 @@ class ClientThread(threading.Thread):
         conexao = mysql.connector.connect(
             host= "localhost",
             user= "root",
-            password= "",
+            password= "031012Gui@",
             database= "project_webScraping"
         )
         return conexao
@@ -67,7 +65,7 @@ class ClientThread(threading.Thread):
 
 host = ''
 
-port = 9007
+port = 9008
 
 addr = (host, port)
 

@@ -34,14 +34,14 @@ class LoginPage(QMainWindow):
         self.stacked_widget.addWidget(self.confirmaSaida)
         self.stacked_widget.addWidget(self.programarEnvio)
 
-        self.mainPage.createAccount_button.clicked.connect(self.mostrar_cadastro)  #
-        self.cadastroPage.voltar_button.clicked.connect(self.voltar_main_page)  #
-        self.mainPage.login_button.clicked.connect(self.callback_login)  #
-        self.mainPage.exit_button.clicked.connect(self.callback_exit)  #
-        self.mainPage.about_us.clicked.connect(self.about_uss)  #
-        self.tela_02.logout_btn.clicked.connect(self.confirmarSaida)  #
-        self.about_us.back_butt.clicked.connect(self.voltar_main_page)  #
-        self.confirmaSaida.logout.clicked.connect(self.voltar_main_page)  #
+        self.mainPage.createAccount_button.clicked.connect(self.mostrar_cadastro)
+        self.cadastroPage.voltar_button.clicked.connect(self.voltar_main_page)
+        self.mainPage.login_button.clicked.connect(self.callback_login)
+        self.mainPage.exit_button.clicked.connect(self.callback_exit)
+        self.mainPage.about_us.clicked.connect(self.about_uss)
+        self.tela_02.logout_btn.clicked.connect(self.confirmarSaida)
+        self.about_us.back_butt.clicked.connect(self.voltar_main_page)
+        self.confirmaSaida.logout.clicked.connect(self.voltar_main_page) 
         self.confirmaSaida.cancel.clicked.connect(self.telaDeBusca)
 
         self.mainPage.email_or_phone.setPlaceholderText('Email')
@@ -127,9 +127,9 @@ class LoginPage(QMainWindow):
         self.stacked_widget.setCurrentIndex(2)
 
 
-ip = '10.180.46.85'
+ip = '192.168.18.46'
 
-port = 9005
+port = 9008
 
 addr = (ip, port)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
