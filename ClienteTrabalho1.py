@@ -67,13 +67,11 @@ class LoginPage(QMainWindow):
 
     def mostrar_cadastro(self):
 
-        opcao = '0'
-        self.client_socket.send(opcao.encode())
+        opcao = '2'
         self.stacked_widget.setCurrentIndex(1)
 
     def voltar_main_page(self):
-        opcao = '0'
-        self.client_socket.send(opcao.encode())
+        opcao = '1'
         self.stacked_widget.setCurrentIndex(0)
         self.mainPage.password.clear()
         self.mainPage.email_or_phone.clear()
@@ -96,22 +94,29 @@ class LoginPage(QMainWindow):
 
         email = self.mainPage.email_or_phone.text()
         senha = self.mainPage.password.text()
+
         if email == '' or senha == '':
             QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
             return
-        string = email + ',' + senha
-        print(string)
-        self.client_socket.send(string.encode())
 
-        retorno = self.client_socket.recv(1024).decode()
+        string = f"{email},{senha}"
 
-        if retorno == '1':
+        try:
+            self.client_socket.send(string.encode())
+            retorno = self.client_socket.recv(1024).decode()
 
-            self.stacked_widget.setCurrentIndex(2)
-            QMessageBox.warning(self, 'Login', 'Login realizado com sucesso')
-        else:
+            if retorno == '1':
+                self.stacked_widget.setCurrentIndex(2)
+                QMessageBox.warning(self, 'Login', 'Login realizado com sucesso')
+            elif retorno == '-1':
+                QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
+            else:
+                QMessageBox.warning(self, 'Erro no login', 'Ocorreu um erro')
+        except Exception as e:
+            print(f"Error during login: {e}")
+            QMessageBox.warning(self,f"Ocorreu um erro: {e}")
 
-            QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
+
 
     def callback_cadastro(self):
         opcao = '2'
@@ -130,6 +135,7 @@ class LoginPage(QMainWindow):
 
         string = f"{first_name},{second_name},{email_or_phone},{password},{data_nascimento}"
 
+
         if first_name == '' or second_name == '' or email_or_phone == '' or password == '' or confirm_password == '':
             QMessageBox.warning(self, 'Erro no cadastro', 'Preencha todos os campos')
             return
@@ -140,19 +146,23 @@ class LoginPage(QMainWindow):
         self.client_socket.send(string.encode())
 
         try:
-            retorno = self.client_socket.recv(1024).decode()
-        except Exception as e:
-            print(f"Error during login: {e}")
-            QMessageBox.warning(self, "Erro no login", f"Ocorreu um erro: {e}")
-            return
 
-        if retorno == '1':
-            self.stacked_widget.setCurrentIndex(0)
-            QMessageBox.warning(self, 'Cadastro', 'Cadastro realizado com sucesso')
-        elif retorno == '-2':
-            QMessageBox.warning(self, 'Erro no cadastro', 'Email já existe')
-        else:
-            QMessageBox.warning(self, 'Erro no cadastro', 'Ocorreu um erro')
+            retornooo = self.client_socket.recv(1024).decode()
+
+            if retornooo == '1':
+                # print("Cadastro realizado com sucesso.")
+                self.stacked_widget.setCurrentIndex(0)
+                QMessageBox.warning(self, 'Cadastro', 'Cadastro realizado com sucesso')
+            elif retornooo == '-2':
+                # print("Email já existe.")
+                QMessageBox.warning(self, 'Email já existe', 'Email já existe')
+            else:
+                # print("Erro no cadastro.")
+                QMessageBox.warning(self, 'Erro no cadastro', 'Ocorreu um erro')
+        except Exception as e:
+            print(f"Erro durante cadastro: {e}")
+            QMessageBox.warning(self, "Erro no cadastro", f"Ocorreu um erro: {e}")
+            return
 
         self.cadastroPage.first_name.clear()
         self.cadastroPage.second_name.clear()
@@ -256,27 +266,41 @@ class LoginPage(QMainWindow):
         opcao = '-1'
         self.client_socket.send(opcao.encode())
         self.client_socket.close()
-        exit(1)
 
     def about_uss(self):
         opcao = '0'
         self.client_socket.send(opcao.encode())
-        self.stacked_widget.setCurrentIndex(3)
+
 
     def confirmarSaida(self):
         opcao = '0'
         self.client_socket.send(opcao.encode())
-        self.stacked_widget.setCurrentIndex(4)
+
+        teste = '1'
+
+        self.client_socket.send(teste.encode())
+
+        resposta_servidor = self.client_socket.recv(1024).decode()
+
+        if resposta_servidor == '1':
+            QMessageBox.warning(self, 'Continua', 'Continuando...')
+            self.stacked_widget.setCurrentIndex(4)
+        elif resposta_servidor == '2':
+            QMessageBox.warning(self, 'Sair', 'Saindo...')
+            self.stacked_widget.setCurrentIndex(0)
+        else:
+            print("deu ruim.")
+            return
 
     def telaDeBusca(self):
         opcao = '3'
-        self.client_socket.send(opcao.encode())
+        # self.client_socket.send(opcao.encode())
         self.stacked_widget.setCurrentIndex(2)
 
 
 
 ip = '192.168.18.46'
-port = 9002
+port = 9005
 
 addr = (ip, port)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
