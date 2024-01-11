@@ -92,8 +92,9 @@ class LoginPage(QMainWindow):
         senha = self.mainPage.password.text()
 
         if email == '' or senha == '':
-            QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
-            return
+            self.client_socket.send(''.encode())
+            senha = ''
+            email = ''
 
         string = f"{email},{senha}"
 
@@ -193,19 +194,11 @@ class LoginPage(QMainWindow):
 
 
         string = f"{keyword},{qntd_tela},{section}"
+        print(string)
+
         self.client_socket.send(string.encode())#1
-
-
-        try:
-            
-            retorno = self.client_socket.recv(1024).decode()#2
-            self.client_socket.send('1'.encode())#3
-        except Exception as e:
-            
-            print(f"Error during login: {e}")
-            self.client_socket.send('0'.encode())
-            QMessageBox.warning(self, "Erro no login", f"Ocorreu um erro: {e}")
-            return
+        retorno = self.client_socket.recv(1024).decode()#2
+        self.client_socket.send('1'.encode())#3
 
         print('Deu certo o retorno: ', retorno)
         print('Deu certo as noticias')
@@ -229,7 +222,6 @@ class LoginPage(QMainWindow):
             QMessageBox.warning(self, 'Erro na busca', 'Ocorreu um erro na palavra chave')
 
         self.tela_02.key_word.clear()
-        self.tela_02.qntd_tela.clear()
         print('Cheguei ao final')
 
     def programaEnvioEmail(self):
@@ -269,6 +261,7 @@ class LoginPage(QMainWindow):
         opcao = '-1'
         self.client_socket.send(opcao.encode())
         self.client_socket.close()
+        exit(1)
 
     def about_uss_funcao(self):
         
