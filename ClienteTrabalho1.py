@@ -40,14 +40,12 @@ class LoginPage(QMainWindow):
         self.mainPage.login_button.clicked.connect(self.callback_login)
         self.cadastroPage.cadastrar_button.clicked.connect(self.callback_cadastro)
         self.mainPage.exit_button.clicked.connect(self.callback_exit)
-        self.mainPage.about_us.clicked.connect(self.about_uss)
-        self.tela_02.logout_btn.clicked.connect(self.confirmarSaida)
+        self.mainPage.about_us.clicked.connect(self.about_uss_funcao)
+        self.tela_02.logout_btn.clicked.connect(self.confirmarSaidaFuncao)
         self.tela_02.search_btn.clicked.connect(self.buscar_noticiasTela)
-        self.tela_02.envioProgramado.clicked.connect(self.confirmarSaida)
         self.tela_02.envioProgramado.clicked.connect(self.programarEnvioTela)
-        self.programarEnvio.voltarMostrarTela.clicked.connect(self.confirmarSaida)
-        self.programarEnvio.programar.clicked.connect(self.programaEnvio)
-        self.programarEnvio.testarEvios.clicked.connect(self.programaEnvio)
+        self.programarEnvio.voltarMostrarTela.clicked.connect(self.telaDeBusca)
+        self.programarEnvio.programar.clicked.connect(self.programaEnvioEmail)
         self.about_us.back_butt.clicked.connect(self.voltar_main_page)
         self.confirmaSaida.logout.clicked.connect(self.voltar_main_page)
         self.confirmaSaida.cancel.clicked.connect(self.telaDeBusca)
@@ -67,11 +65,10 @@ class LoginPage(QMainWindow):
 
     def mostrar_cadastro(self):
 
-        opcao = '2'
         self.stacked_widget.setCurrentIndex(1)
 
     def voltar_main_page(self):
-        opcao = '1'
+        
         self.stacked_widget.setCurrentIndex(0)
         self.mainPage.password.clear()
         self.mainPage.email_or_phone.clear()
@@ -81,8 +78,7 @@ class LoginPage(QMainWindow):
         self.apply_theme(selected_theme)
 
     def apply_theme(self, theme_name):
-        opcao = '0'
-        self.client_socket.send(opcao.encode())
+        
         if theme_name == "Dark":
             self.setStyleSheet(load_stylesheet_pyqt5())
         else:
@@ -103,14 +99,17 @@ class LoginPage(QMainWindow):
 
         try:
             self.client_socket.send(string.encode())
-            retorno = self.client_socket.recv(1024).decode()
+            retorno = self.client_socket.recv(1024).decode()#
 
             if retorno == '1':
+                
                 self.stacked_widget.setCurrentIndex(2)
                 QMessageBox.warning(self, 'Login', 'Login realizado com sucesso')
             elif retorno == '-1':
+
                 QMessageBox.warning(self, 'Erro no login', 'Email e/ou senha incorretos')
             else:
+
                 QMessageBox.warning(self, 'Erro no login', 'Ocorreu um erro')
         except Exception as e:
             print(f"Error during login: {e}")
@@ -150,14 +149,14 @@ class LoginPage(QMainWindow):
             retornooo = self.client_socket.recv(1024).decode()
 
             if retornooo == '1':
-                # print("Cadastro realizado com sucesso.")
+
                 self.stacked_widget.setCurrentIndex(0)
                 QMessageBox.warning(self, 'Cadastro', 'Cadastro realizado com sucesso')
             elif retornooo == '-2':
-                # print("Email já existe.")
+
                 QMessageBox.warning(self, 'Email já existe', 'Email já existe')
             else:
-                # print("Erro no cadastro.")
+
                 QMessageBox.warning(self, 'Erro no cadastro', 'Ocorreu um erro')
         except Exception as e:
             print(f"Erro durante cadastro: {e}")
@@ -194,112 +193,100 @@ class LoginPage(QMainWindow):
 
 
         string = f"{keyword},{qntd_tela},{section}"
-        self.client_socket.send(string.encode())
+        self.client_socket.send(string.encode())#1
 
 
         try:
-            retorno = self.client_socket.recv(1024).decode()
+            
+            retorno = self.client_socket.recv(1024).decode()#2
+            self.client_socket.send('1'.encode())#3
         except Exception as e:
+            
             print(f"Error during login: {e}")
+            self.client_socket.send('0'.encode())
             QMessageBox.warning(self, "Erro no login", f"Ocorreu um erro: {e}")
             return
 
+        print('Deu certo o retorno: ', retorno)
+        print('Deu certo as noticias')
         if retorno == '1':
+
             self.stacked_widget.setCurrentIndex(2)
             QMessageBox.warning(self, 'Busca', 'Busca realizada com sucesso')
+
+            noticias = self.client_socket.recv(1024).decode()
+            self.tela_02.news_display.setText(noticias)    
+                
         elif retorno == '-1':
+            
+            noticias = self.client_socket.recv(1024).decode()
+            self.stacked_widget.setCurrentIndex(2)
             QMessageBox.warning(self, 'Ocorreu um erro na busca')
+            self.tela_02.news_display.setText(noticias)
         elif retorno == '-2':
+            
+            self.stacked_widget.setCurrentIndex(2)
             QMessageBox.warning(self, 'Erro na busca', 'Ocorreu um erro na palavra chave')
+
         self.tela_02.key_word.clear()
         self.tela_02.qntd_tela.clear()
+        print('Cheguei ao final')
 
-
-    def programaEnvio(self):
-        opcao = '4'
-        self.client_socket.send(opcao.encode())
+    def programaEnvioEmail(self):
 
         quantidade = self.programarEnvio.qntdTela.currentText()
-        lingua = self.programarEnvio.lingua_tela.currentText()
+        keyword = self.programarEnvio.digitarInfo.text()
         frenquencia = self.programarEnvio.frequenciaEmails.currentText()
+        sectio = self.programarEnvio.section.currentText()
+        emai = self.mainPage.email_or_phone.text()
 
-        if quantidade == '':
-            QMessageBox.warning(self, 'Erro na busca', 'Digite uma quantidade de notícias')
-            return
-        if lingua == '':
-            QMessageBox.warning(self, 'Erro na busca', 'Selecione uma lingua')
-            return
-        if frenquencia == '':
-            QMessageBox.warning(self, 'Erro na busca', 'Selecione uma frequência')
+        if quantidade == '' or keyword == '' or frenquencia == '' or sectio == '':
+            QMessageBox.warning(self, 'Erro ao programar envios', 'Não pode conter campos vazios')
             return
 
-        string = f"{quantidade},{lingua},{frenquencia}"
-        self.client_socket.send(string.encode())
-
-        try:
-            retorno = self.client_socket.recv(1024).decode()
-        except Exception as e:
-            print(f"Error during login: {e}")
-            QMessageBox.warning(self, "Erro no login", f"Ocorreu um erro: {e}")
-            return
-
-        if retorno == '1':
-            self.stacked_widget.setCurrentIndex(5)
-            QMessageBox.warning(self, 'Busca', 'Busca realizada com sucesso')
-        elif retorno == '-1':
-            QMessageBox.warning(self, 'Ocorreu um erro na busca')
-        elif retorno == '-2':
-            QMessageBox.warning(self, 'Erro na busca', 'Ocorreu um erro na palavra chave')
-
-        self.programarEnvio.key_word.clear()
-        self.programarEnvio.qntd_tela.clear()
-
-
-
-    def programarEnvioTela(self):
         opcao = '4'
         self.client_socket.send(opcao.encode())
-        self.stacked_widget.setCurrentIndex(5)
+        
+        string = f"{quantidade},{keyword},{frenquencia},{sectio},{emai}"
+        self.client_socket.send(string.encode())#1
+            
+        retorno = self.client_socket.recv(1024).decode()#2
 
+        if retorno == '1':
+                
+            QMessageBox.warning(self, 'Programação de emails', 'Operação realizada com sucesso')
+        elif retorno == '-1':
+
+            QMessageBox.warning(self, 'Programação de emails', 'Falha na operação')
+
+        self.programarEnvio.digitarInfo.clear()
+        
+    def programarEnvioTela(self):
+
+        self.stacked_widget.setCurrentIndex(5)
 
     def callback_exit(self):
         opcao = '-1'
         self.client_socket.send(opcao.encode())
         self.client_socket.close()
 
-    def about_uss(self):
-        opcao = '0'
-        self.client_socket.send(opcao.encode())
+    def about_uss_funcao(self):
+        
+        self.stacked_widget.setCurrentIndex(3)
+
+    def confirmarSaidaFuncao(self):
 
 
-    def confirmarSaida(self):
-        opcao = '0'
-        self.client_socket.send(opcao.encode())
-
-        teste = '1'
-
-        self.client_socket.send(teste.encode())
-
-        resposta_servidor = self.client_socket.recv(1024).decode()
-
-        if resposta_servidor == '1':
-            QMessageBox.warning(self, 'Continua', 'Continuando...')
-            self.stacked_widget.setCurrentIndex(4)
-        elif resposta_servidor == '2':
-            QMessageBox.warning(self, 'Sair', 'Saindo...')
-            self.stacked_widget.setCurrentIndex(0)
-        else:
-            print("deu ruim.")
-            return
-
+        self.stacked_widget.setCurrentIndex(4)
+        
     def telaDeBusca(self):
-        opcao = '3'
-        # self.client_socket.send(opcao.encode())
+        
         self.stacked_widget.setCurrentIndex(2)
 
 
 
-ip = '192.168.18.46'
+ip = 'localhost'
+#192.168.18.46
 port = 9005
 
 addr = (ip, port)

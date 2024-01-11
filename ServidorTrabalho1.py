@@ -19,12 +19,13 @@ class ClientThread(threading.Thread):
 
         try:
             while not self.startEnd.is_set():
+                print('Aguardando nova opção')
                 opcao = self.conexao.recv(1024)
 
                 print(f"Opção: {opcao.decode()}")
 
                 if opcao.decode() == '1':
-                    recebido = self.conexao.recv(1024).decode().split(',')
+                    recebido = self.conexao.recv(1024).decode().split(',')#
 
                     if recebido:
                         email = recebido[0]
@@ -54,22 +55,29 @@ class ClientThread(threading.Thread):
                         self.conexao.send('-1'.encode())
 
                 elif opcao.decode() == '3':
-                    data = self.conexao.recv(1024).decode().split(',')
+                    
+                    data = self.conexao.recv(1024).decode().split(',')#1
                     keyword = data[0]
                     qntd_tela = int(data[1])
                     section = data[2]
                     print(f"Keyword: {keyword} - Quantidade de Notícias: {qntd_tela} - Seção: {section}")
                     self.buscarNoticias(keyword, qntd_tela, section)
+
+
                 elif opcao.decode() == '4':
-                    data = self.conexao.recv(1024).decode().split(',')
-                    keyword = data[0]
-                    qntd_tela = int(data[1])
-                    section = data[2]
-                    print(f"Keyword: {keyword} - Quantidade de Notícias: {qntd_tela} - Seção: {section}")
-                    self.programarNoticias(keyword, qntd_tela, section)
+
+                    data = self.conexao.recv(1024).decode().split(',')#1
+                    quantidade = data[0]
+                    keyword = data[1]
+                    frequencia = data[2]
+                    section = data[3]
+                    email = data[4]
+                    self.programarNoticias(keyword, quantidade, frequencia, section, email)
                 elif opcao.decode() == '-1':
+
                     break
                 elif opcao.decode() == '0':
+
                     pass
 
         except Exception as e:
@@ -84,30 +92,35 @@ class ClientThread(threading.Thread):
         # senha_hash = senha.encode('utf-8')
         conexao = self.conectar_banco()
         cursor = conexao.cursor()
-
+        retorno = ''
         try:
-            query = "SELECT * FROM usuarios WHERE email_ou_telefone = %s"
-            cursor.execute(query, (email,))
+            query = "SELECT * FROM Usuarios WHERE email = %s"
+            cursor.execute(query, [email])
             usuario = cursor.fetchone()
 
 
             if usuario:
+
                 hash_guardado = usuario[4].encode('utf-8')
                 if bcrypt.checkpw(senha.encode('utf-8'), hash_guardado):
-                    return '1'
+                    retorno = '1'
                 else:
 
                     print("Senha incorreta")
-                    return '-1'
+                    retorno = '-1'
             else:
+                
                 print("usuario nao encontrado")
+                retorno = '-1'
         except Exception as exc:
             print(f"Erro ao verificar login: {exc}")
-            return '-1'
+            retorno = '-1'
 
         finally:
             cursor.close()
             conexao.close()
+
+        return retorno
 
     def cadastrar(self, first_name, second_name, email, senha, data_nascimento):
         conexao = self.conectar_banco()
@@ -115,7 +128,7 @@ class ClientThread(threading.Thread):
         try:
             cursor = conexao.cursor()
 
-            query = "SELECT * FROM usuarios WHERE email_ou_telefone = %s;"
+            query = "SELECT * FROM usuarios WHERE email = %s;"
             cursor.execute(query, (email,))
             usuario = cursor.fetchone()
 
@@ -131,7 +144,7 @@ class ClientThread(threading.Thread):
                 cursor = conexao.cursor()
                 data_nasci = datetime.datetime.strptime(data_nascimento, '%d/%m/%Y').date()
 
-                query = "INSERT INTO usuarios (primeiro_nome, segundo_nome, email_ou_telefone, senha, data_nascimento) VALUES (%s, %s, %s, %s, %s);"
+                query = "INSERT INTO usuarios (first_name, second_name, email, senha, data_nascimento) VALUES (%s, %s, %s, %s, %s);"
                 cursor.execute(query, (first_name, second_name, email, senha_hash, data_nasci))
                 conexao.commit()
 
@@ -150,74 +163,102 @@ class ClientThread(threading.Thread):
 
     def buscarNoticias(self, keyword, qntd_tela, section):
 
-
         url = f'https://news.google.com/search?q={keyword}&hl=en-US&gl=US&ceid=US:en&section={section}'
-        print("enttrei na busca de noticias")
         response = requests.get(url)
-
+        retorno = ""
+        msg = ""
         if response.status_code == 200:
-            print("passei do codigo de 200")
+            
             soup = BeautifulSoup(response.content, 'html.parser')
             articles = soup.find_all('h3', class_='ipQwMb')
-
             matching_news = []
-
+            
             for i, article in enumerate(articles):
+
                 if i >= qntd_tela:
+                        
                     break
+
                 title = article.text
                 link = 'https://news.google.com' + article.a['href']
                 print("cheguei antes do retorno")
                 if keyword.lower() in title.lower():
                     matching_news.append({'title': title, 'link': link})
-                    return "1"
 
-                else:
-                    return "-2"
+            
+            retorno = "1"
+        
         else:
-            return "-1"
+            retorno = "-1"
+            msg = "Não encontrado :("
 
-    def programarNoticias(self, keyword, qntd_tela, section):
+        self.conexao.send(retorno.encode())#2
+        if(self.conexao.recv(1024).decode()):#3
 
-            url = f'https://news.google.com/search?q={keyword}&hl=en-US&gl=US&ceid=US:en&section={section}'
-            response = requests.get(url)
+            if retorno != "1":
 
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
-                articles = soup.find_all('h3', class_='ipQwMb')
-
-                matching_news = []
-
-                for i, article in enumerate(articles):
-                    if i >= qntd_tela:
-                        break
-                    title = article.text
-                    link = 'https://news.google.com' + article.a['href']
-
-                    if keyword.lower() in title.lower():
-                        matching_news.append({'title': title, 'link': link})
-
-                if len(matching_news) > 0:
-                    conexao = self.conectar_banco()
-                    cursor = conexao.cursor()
-
-                    query = "SELECT * FROM usuarios;"
-                    cursor.execute(query)
-                    usuarios = cursor.fetchall()
-
-                    for usuario in usuarios:
-                        email = usuario[3]
-                        senha = usuario[4]
-                        self.enviarEmail(email, senha, matching_news)
-
-                    cursor.close()
-                    conexao.close()
-
-                else:
-                    print("Nenhuma notícia encontrada")
+                self.conexao.send(msg.encode())
             else:
-                print("Erro ao conectar ao Google News")
+                
+                self.exibir_noticias(matching_news)
+                
+    def exibir_noticias(self, noticias): #noticias é uma lista, talvez vazia...
 
+        if noticias:
+
+            news_text = ""
+            for news in noticias:
+
+                news_text += f'Título: {news["title"]}<br>'
+                news_text += f'Link: <a href="{news["link"]}">{news["link"]}</a><br><br>'
+
+            self.conexao.send(news_text.encode())
+        else:
+            
+            self.conexao.send('Sem notícias'.encode())
+            print('Sem notícias')
+
+    def programarNoticias(self, keyword, quantidade, frequencia, section, email):
+
+            conexao = self.conectar_banco()
+            cursor = conexao.cursor()
+            cursor.execute('select id from Usuarios where email = %s;', [email])
+            id_user = cursor.fetchone()
+
+            if frequencia == 'Domingo':
+
+                frequencia = '0'
+            elif frequencia == 'Segunda-feira':
+
+                frequencia = '1'
+            elif frequencia == 'Terça-feira':
+
+                frequencia = '2'
+            elif frequencia == 'Quarta-feira':
+
+                frequencia = '3'
+            elif frequencia == 'Quinta-feira':
+
+                frequencia = '4'
+            elif frequencia == 'Sexta-feira':
+
+                frequencia = '5'
+            elif frequencia == 'Sábado':
+
+                frequencia = '6'
+            else:
+
+                frequencia = '7'
+                
+            if id_user:
+
+                query = 'insert into email_programado(id_programado, dia, quant_info, noticias, id_users, section) values(default, %s, %s, %s, %s, %s);'
+                cursor.execute(query, [frequencia, quantidade, keyword, id_user[0], section])
+                self.conexao.send('1'.encode())#2
+            else:
+
+                self.conexao.send('-1'.encode())#2
+                
     def enviarEmail(self, email, senha, noticias):
         print("entrou no enviar email")
         pass
@@ -225,10 +266,10 @@ class ClientThread(threading.Thread):
     def conectar_banco(self):
 
         conexao = mysql.connector.connect(
-            host= "localhost",
-            user= "root",
-            password= "031012Gui@",
-            database= "project_webScraping"
+            host = "localhost",
+            user = "root",
+            password = "",
+            database = "project_webScraping"
         )
         return conexao
 
