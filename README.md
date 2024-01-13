@@ -1,40 +1,42 @@
-News Web Scraping with Python, Qt Designer, and Scheduled Email Sending
+Web Scraping de notícias com Python, Qt Designer e envio agendado de e-mail
 
-Overview
+Visão geral
+Este projeto fornece um aplicativo de web scraping em Python, combinado com a facilidade do design gráfico do Qt Designer, para coletar e visualizar notícias da web. Além disso, inclui a funcionalidade de envio de notícias programadas por e-mail aos usuários.
 
-This project provides a Python web scraping application, combined with the ease of Qt Designer graphic design, to collect and view web news. In addition, it includes the functionality to send scheduled news by email to users.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Key Features
 
-    Python Web Scraping:
-    Using the Python language and the BeautifulSoup library, the project performs web scraping to extract relevant information from news websites. This provides an efficient way to obtain up-to-date data.
+Características principais
 
-    Intuitive Graphical User Interface:
-    Qt Designer is integrated to create an intuitive graphical user interface. The windows, buttons, and input fields are visually designed for a user-friendly experience.
+Raspagem da Web em Python:
+Utilizando a linguagem Python e a biblioteca BeautifulSoup, o projeto realiza web scraping para extrair informações relevantes de sites de notícias. Isso fornece uma maneira eficiente de obter dados atualizados.
 
-    News Collection and Viewing:
-    Users can enter keywords or select specific news categories. The application uses scraping techniques to collect relevant data, presenting the news in an organized and readable way.
+Interface gráfica do usuário intuitiva:
+Qt Designer é integrado para criar uma interface gráfica de usuário intuitiva. As janelas, botões e campos de entrada são projetados visualmente para uma experiência amigável.
 
-    Scheduled Email Sending:
-    A feature allows users to schedule the sending of news to their emails at specific times. This is achieved through libraries such as smtplib for sending emails and schedule for scheduling tasks.
+Coleta e visualização de notícias:
+Os usuários podem inserir palavras-chave ou selecionar categorias de notícias específicas. O aplicativo utiliza técnicas de scraping para coletar dados relevantes, apresentando as notícias de forma organizada e legível.
 
-    Data Persistence:
-    User preferences and scraping settings are stored to optimize the experience on subsequent executions.
+Envio de e-mail agendado:
+Um recurso permite que os usuários programem o envio de novidades para seus e-mails em horários específicos. Isso é conseguido por meio de bibliotecas como smtplib para envio de e-mails e agendamento para agendamento de tarefas.
 
-Security and Ethics
+Segurança e Ética
+O projeto segue práticas éticas e legais, respeitando os termos de serviço dos sites. São implementadas medidas de segurança para garantir o tratamento seguro dos dados dos utilizadores.
 
-The project adheres to ethical and legal practices, respecting the terms of service of the websites. Security measures are implemented to ensure the safe handling of user data.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-How to Use
 
-    Clone the repository: git clone https://github.com/guikelvin6/scrapingNews.io
-    Install the dependencies: ---
-    Run the application: python3 app_scrapingNews.py
-    Customize your preferences and enjoy personalized news.
+Como usar
 
-Contributions
+Clone o repositório: git clone https://github.com/AlisonVit17/trabalhoPythonDia28.git
+Instale as dependências: ---
+Execute a aplicação: python3 ServidorTrabalho1.py e
+em outro terminal python3 ClienteTrabalho1.py
+Personalize suas preferências e aproveite novidades personalizadas.
 
-Contributions are welcome! Feel free to open issues, propose improvements, or send pull requests.
+Contribuições
 
-Note: This project is part of the practical activity of the Bachelor of Information Systems course.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir problemas, propor melhorias ou enviar solicitações pull.
+
+Nota: Este projeto faz parte da atividade prática do curso de Bacharelado em Sistemas de Informação.
 
