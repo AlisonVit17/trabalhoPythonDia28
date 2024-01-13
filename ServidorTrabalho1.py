@@ -5,7 +5,8 @@ import bcrypt
 import datetime
 from GoogleNews import GoogleNews
 import pandas as pd
-
+from datetime import date
+import smtplib
 
 ################################## - // - ######################################
 def conectar_banco():
@@ -18,6 +19,7 @@ def conectar_banco():
     )
     return conexao
 # -- #
+
 def envia_Email(emai, news_text):
     import email.message
     msg = email.message.Message()
@@ -35,26 +37,30 @@ def envia_Email(emai, news_text):
     s.sendmail(msg['From'], msg['To'], msg.as_string().encode('utf-8'))
     print('Passei do enviar')
 # -- #
-def enviaEmails(listaNoticias, email):
-    news_text = ""
-    for noticias in listaNoticias:
-        if 'news' in noticias:
-            news = noticias['news']
-            if news:
-                for i, article in enumerate(news):
-                    news_text += f"Notícia {i + 1}:\n"
-                    news_text += f"Título: {article.get('title', 'N/A')}\n"
-                    news_text += f"Link: {article.get('url', 'N/A')}\n\n"
-                news_text += "\n\n"
-            else:
-                news_text +="Nenhuma notícia encontrada."
-        else:
-            news_text +="Nenhuma notícia encontrada."
 
-    if news_text != "":
-        self.envia_Email(email, news_text)
+def enviaEmails(noticias, email):
+
+    if noticias:
+
+        news_text = ""
+        for news in noticias:
+            title = news["title"]
+            link = news["link"]
+
+            #para remover uma parte do html que nao eh necessario para abertura do link
+            link_parts = link.split('&')
+            clean_link = link_parts[0]
+
+            news_text += f'Título: {title}<br>'
+            news_text += f'Link: <a href="{clean_link}">{clean_link}</a><br><br>'
+
+        envia_Email(email, news_text)
+    else:
+        
+        print('Sem notícias')
 # -- #
-def buscar_noticiasEmail()
+
+def buscar_noticiasEmail():
 
     hoje = date.today()
     email = ""
@@ -65,45 +71,69 @@ def buscar_noticiasEmail()
     query = 'select * from email_programado;'
     cursor.execute(query, [])
     programacoesDeEnvio = cursor.fetchall()
-    
+    essesJaForam = []
     for i in programacoesDeEnvio:
-        listaNoticias = []
-        quantInfo = []
-        assunto = []
-        idioma = []
-        for a in range(len(self.programacoesDeEnvio[i][0])):
-            if (hoje.weekday() == self.programacoesDeEnvio[i][3][a] or self.programacoesDeEnvio[i][3][a] == 7):
-                email = i
-                quantInfo.append(self.programacoesDeEnvio[i][1][a])
-                assunto.append(self.programacoesDeEnvio[i][0][a])
-                idioma.append(self.programacoesDeEnvio[i][2][a])
 
-        for a in range(len(quantInfo)):
-            print('Cheguei no dia')
-            if assunto[a]:
-                api_key = '1564acb7dbc747d3858772371c9fb9c1'
-                print(assunto[a], quantInfo[a], api_key)
-                url = f'https://api.worldnewsapi.com/search-news?text={assunto[a]}&number={quantInfo[a]}&api-key={api_key}'
+        if (i[4] not in essesJaForam):
+            query = 'select email from Usuarios where id = %s;'
+            cursor.execute(query, [i[4]])
+            emailParaEnviar = cursor.fetchone()
 
-                if idioma[a] == "português":
-                    url += '&language=pt'
+            essesJaForam.append(i[4])
+            quantInfo = []
+            assunto = []
+            secao = []
+            for a in programacoesDeEnvio:
+
+                if a[4] == i[4] and (a[1] == hoje or a[1] == 7):
+
+                    secao.append(a[5])
+                    quantInfo.append(a[2])
+                    assunto.append(a[3])
+
+            matching_news = []
+            for a in range(len(quantInfo)):
+
+                googlenews = GoogleNews(lang='pt', region='BR', period='7d')
+
                 try:
-                    response = requests.get(url)
+                    # faz a raspagem com a lib
+                    googlenews.search(assunto[a])
 
-                    if response.status_code == 200:
-                        listaNoticias.append(response.json())
-                    else:
-                        self.tela_02.news_display.setPlainText("Erro ao buscar notícias.")
-                        print('Não deu certo buscar a notícia')
+                    # pega os resultados
+                    result = googlenews.result()
+
+                    # faz a conversao para DataFrame usando pandas
+                    df = pd.DataFrame(result)
+
+                    # faz a filtragem para a quantidade desejada de notihcias
+                    df = df.head(int(quantInfo[a]))
+
+                    for i in range(min(int(quantInfo[a]), len(df))):
+                        title = df['title'][i]
+                        link = df['link'][i]
+                        print(link)
+
+                        # para ver se o link é uma URL válida
+                        if not link.startswith('http'):
+                            link = 'https://news.google.com' + link
+
+                        # para remover caracteres especiais do link
+                        link = link.encode('utf-8').decode('ascii', 'ignore')
+
+                        newss = {'title': title, 'link': link}
+                        matching_news.append(newss)
+
+                    retorno = "1"
                 except Exception as e:
-                    self.tela_02.news_display.setPlainText(f"Erro: {str(e)}")
-            else:
-                self.tela_02.news_display.setPlainText("Insira uma palavra-chave para buscar notícias.")
+                    retorno = "-1"
+                    msg = f"Erro ao buscar notícias: {e}"
+                    print(msg)
 
-        if listaNoticias != []:
-            print(i)
-            self.enviaEmails(listaNoticias, i)
-            print('Emails enviados com sucesso!')
+            if matching_news != []:
+                print(emailParaEnviar[0])
+                enviaEmails(matching_news, emailParaEnviar[0])
+                print('Emails enviados com sucesso!')
 ################################# - // - #######################################
 class ClientThread(threading.Thread):
 
@@ -433,6 +463,7 @@ class ClientThread(threading.Thread):
         print("entrou no enviar email")
         pass
 
+buscar_noticiasEmail()
 
 host = ''
 
