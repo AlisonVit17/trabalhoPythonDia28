@@ -19,7 +19,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>771</width>
+      <width>781</width>
       <height>541</height>
      </rect>
     </property>
@@ -144,11 +144,32 @@
     <widget class="QTextBrowser" name="news_display">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>240</y>
-       <width>681</width>
-       <height>251</height>
+       <x>30</x>
+       <y>230</y>
+       <width>711</width>
+       <height>261</height>
       </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="lineWidth">
+      <number>3</number>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+     <property name="autoFormatting">
+      <set>QTextEdit::AutoAll</set>
+     </property>
+     <property name="lineWrapMode">
+      <enum>QTextEdit::NoWrap</enum>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
@@ -159,7 +180,7 @@
      <x>0</x>
      <y>0</y>
      <width>780</width>
-     <height>29</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
