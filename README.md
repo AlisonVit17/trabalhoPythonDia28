@@ -29,9 +29,10 @@ O projeto segue práticas éticas e legais, respeitando os termos de serviço do
 
 +++ Como usar +++
 
-Clone o repositório: git clone https://github.com/AlisonVit17/trabalhoPythonDia28.git
+---> Clone o repositório: git clone https://github.com/AlisonVit17/trabalhoPythonDia28.git
 
-Instale as dependências: ---
+---> Instale os pacotes necessários: 
+
 ---> Execute a aplicação: python3 ServidorTrabalho1.py e
 ---> em outro terminal python3 ClienteTrabalho1.py
 
