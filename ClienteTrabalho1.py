@@ -194,35 +194,34 @@ class LoginPage(QMainWindow):
 
 
         string = f"{keyword},{qntd_tela},{section}"
-        print(string)
 
         self.client_socket.send(string.encode())#1
         retorno = self.client_socket.recv(1024).decode()#2
         self.client_socket.send('1'.encode())#3
 
-        print('Deu certo o retorno: ', retorno)
-        print('Deu certo as noticias')
         if retorno == '1':
-
             self.stacked_widget.setCurrentIndex(2)
+            noticias = self.client_socket.recv(4096).decode()
+
+            self.tela_02.news_display.setPlainText("")
+            self.tela_02.news_display.setText(noticias)
+            self.tela_02.news_display.setHtml(noticias)
+
             QMessageBox.warning(self, 'Busca', 'Busca realizada com sucesso')
 
-            noticias = self.client_socket.recv(1024).decode()
-            self.tela_02.news_display.setText(noticias)    
+            
                 
         elif retorno == '-1':
-            
             noticias = self.client_socket.recv(1024).decode()
             self.stacked_widget.setCurrentIndex(2)
             QMessageBox.warning(self, 'Ocorreu um erro na busca')
             self.tela_02.news_display.setText(noticias)
         elif retorno == '-2':
-            
             self.stacked_widget.setCurrentIndex(2)
             QMessageBox.warning(self, 'Erro na busca', 'Ocorreu um erro na palavra chave')
 
         self.tela_02.key_word.clear()
-        print('Cheguei ao final')
+        
 
     def programaEnvioEmail(self):
 
@@ -280,7 +279,7 @@ class LoginPage(QMainWindow):
 
 ip = 'localhost'
 #192.168.18.46
-port = 9005
+port = 9009
 
 addr = (ip, port)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

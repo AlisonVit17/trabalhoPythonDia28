@@ -3,8 +3,9 @@ import threading
 import mysql.connector
 import bcrypt
 import datetime
-import requests
-from bs4 import BeautifulSoup
+from GoogleNews import GoogleNews
+import pandas as pd
+
 
 class ClientThread(threading.Thread):
 
@@ -94,7 +95,7 @@ class ClientThread(threading.Thread):
         cursor = conexao.cursor()
         retorno = ''
         try:
-            query = "SELECT * FROM Usuarios WHERE email = %s"
+            query = "SELECT * FROM usuarios WHERE email_ou_telefone = %s"
             cursor.execute(query, [email])
             usuario = cursor.fetchone()
 
@@ -128,7 +129,7 @@ class ClientThread(threading.Thread):
         try:
             cursor = conexao.cursor()
 
-            query = "SELECT * FROM usuarios WHERE email = %s;"
+            query = "SELECT * FROM usuarios WHERE email_ou_telefone = %s;"
             cursor.execute(query, (email,))
             usuario = cursor.fetchone()
 
@@ -144,7 +145,7 @@ class ClientThread(threading.Thread):
                 cursor = conexao.cursor()
                 data_nasci = datetime.datetime.strptime(data_nascimento, '%d/%m/%Y').date()
 
-                query = "INSERT INTO usuarios (first_name, second_name, email, senha, data_nascimento) VALUES (%s, %s, %s, %s, %s);"
+                query = "INSERT INTO usuarios (primeiro_nome, segundo_nome, email_ou_telefone, senha, data_nascimento) VALUES (%s, %s, %s, %s, %s);"
                 cursor.execute(query, (first_name, second_name, email, senha_hash, data_nasci))
                 conexao.commit()
 
@@ -160,69 +161,140 @@ class ClientThread(threading.Thread):
             print(f"Erro ao cadastrar usuário: {e}")
             return '-1'
 
-
     def buscarNoticias(self, keyword, qntd_tela, section):
+        # opcional - com a lib do googleNews, podemos acrescentar o periodo para nao pegar noticias tao antigas
+        # acrescentar internamente, por nos mesmo , sem o usuario
+        googlenews = GoogleNews(lang='pt', region='BR', period='7d')
 
-        url = f'https://news.google.com/search?q={keyword}&hl=en-US&gl=US&ceid=US:en&section={section}'
-        response = requests.get(url)
-        retorno = ""
-        msg = ""
-        if response.status_code == 200:
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all('h3', class_='ipQwMb')
+        try:
+            # faz a raspagem com a lib
+            googlenews.search(keyword)
+
+            # pega os resultados
+            result = googlenews.result()
+
+            # faz a conversao para DataFrame usando pandas
+            df = pd.DataFrame(result)
+
+            # faz a filtragem para a quantidade desejada de notihcias
+            df = df.head(int(qntd_tela))
+
             matching_news = []
-            
-            for i, article in enumerate(articles):
+            for i in range(min(int(qntd_tela), len(df))):
+                title = df['title'][i]
+                link = df['link'][i]
+                print(link)
 
-                if i >= qntd_tela:
-                        
-                    break
+                # para ver se o link é uma URL válida
+                if not link.startswith('http'):
+                    link = 'https://news.google.com' + link
 
-                title = article.text
-                link = 'https://news.google.com' + article.a['href']
-                print("cheguei antes do retorno")
-                if keyword.lower() in title.lower():
-                    matching_news.append({'title': title, 'link': link})
+                # para remover caracteres especiais do link
+                link = link.encode('utf-8').decode('ascii', 'ignore')
 
-            
+                newss = {'title': title, 'link': link}
+                matching_news.append(newss)
+
             retorno = "1"
-        
-        else:
+        except Exception as e:
             retorno = "-1"
-            msg = "Não encontrado :("
+            msg = f"Erro ao buscar notícias: {e}"
+            print(msg)
 
-        self.conexao.send(retorno.encode())#2
-        if(self.conexao.recv(1024).decode()):#3
-
+        self.conexao.send(retorno.encode())  # 2
+        if (self.conexao.recv(1024).decode()):  # 3
             if retorno != "1":
-
                 self.conexao.send(msg.encode())
             else:
-                
                 self.exibir_noticias(matching_news)
-                
-    def exibir_noticias(self, noticias): #noticias é uma lista, talvez vazia...
+
+    def exibir_noticias(self, noticias):
 
         if noticias:
-
             news_text = ""
             for news in noticias:
+                title = news["title"]
+                link = news["link"]
 
-                news_text += f'Título: {news["title"]}<br>'
-                news_text += f'Link: <a href="{news["link"]}">{news["link"]}</a><br><br>'
+                # para remover uma parte do html que nao eh necessario para abertura do link
+                link_parts = link.split('&')
+                clean_link = link_parts[0]
+
+                news_text += f'Título: {title}<br>'
+                news_text += f'Link: <a href="{clean_link}">{clean_link}</a><br><br>'
 
             self.conexao.send(news_text.encode())
         else:
-            
             self.conexao.send('Sem notícias'.encode())
             print('Sem notícias')
+
+
+    # def buscarNoticias(self, keyword, qntd_tela, section):
+    #
+    #     url = f'https://news.google.com/search?q={keyword}&hl=en-US&gl=US&ceid=US:en&section={section}'
+    #     response = requests.get(url)
+    #     retorno = ""
+    #     msg = ""
+    #
+    #     try:
+    #         if response.status_code == 200:
+    #
+    #             soup = BeautifulSoup(response.content, 'html.parser')
+    #             articles = soup.find_all('h3', class_='ipQwMb')
+    #             matching_news = []
+    #
+    #             for i, article in enumerate(articles):
+    #                 if i >= qntd_tela:
+    #
+    #                     break
+    #
+    #                 title = article.text
+    #                 link = 'https://news.google.com' + article.a['href']
+    #                 print("cheguei antes do retorno")
+    #                 if keyword.lower() in title.lower():
+    #                     matching_news.append({'title': title, 'link': link})
+    #
+    #
+    #             retorno = "1"
+    #
+    #         else:
+    #             retorno = "-1"
+    #             msg = "Não encontrado :("
+    #
+    #         self.conexao.send(retorno.encode())#2
+    #         if(self.conexao.recv(1024).decode()):#3
+    #             if retorno != "1":
+    #
+    #                 self.conexao.send(msg.encode())
+    #             else:
+    #
+    #                 self.exibir_noticias(matching_news)
+    #     except Exception as e:
+    #         print(f"Erro ao buscar notícias: {e}")
+    #
+    #
+    #
+    # def exibir_noticias(self, noticias): #noticias é uma lista, talvez vazia...
+    #
+    #     if noticias:
+    #
+    #         news_text = ""
+    #         for news in noticias:
+    #
+    #             news_text += f'Título: {news["title"]}<br>'
+    #             news_text += f'Link: <a href="{news["link"]}">{news["link"]}</a><br><br>'
+    #
+    #         self.conexao.send(news_text.encode())
+    #     else:
+    #
+    #         self.conexao.send('Sem notícias'.encode())
+    #         print('Sem notícias')
 
     def programarNoticias(self, keyword, quantidade, frequencia, section, email):
 
             conexao = self.conectar_banco()
             cursor = conexao.cursor()
-            cursor.execute('select id from Usuarios where email = %s;', [email])
+            cursor.execute('select id from usuarios where email_ou_telefone = %s;', [email])
             id_user = cursor.fetchone()
 
             if frequencia == 'Domingo':
@@ -268,7 +340,7 @@ class ClientThread(threading.Thread):
         conexao = mysql.connector.connect(
             host = "localhost",
             user = "root",
-            password = "",
+            password = "031012Gui@",
             database = "project_webScraping"
         )
         return conexao
@@ -276,7 +348,7 @@ class ClientThread(threading.Thread):
 
 host = ''
 
-port = 9005
+port = 9009
 
 addr = (host, port)
 
