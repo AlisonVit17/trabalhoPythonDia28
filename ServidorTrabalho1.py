@@ -95,7 +95,7 @@ class ClientThread(threading.Thread):
         cursor = conexao.cursor()
         retorno = ''
         try:
-            query = "SELECT * FROM usuarios WHERE email_ou_telefone = %s"
+            query = "SELECT * FROM usuarios WHERE email = %s"
             cursor.execute(query, [email])
             usuario = cursor.fetchone()
 
@@ -129,7 +129,7 @@ class ClientThread(threading.Thread):
         try:
             cursor = conexao.cursor()
 
-            query = "SELECT * FROM usuarios WHERE email_ou_telefone = %s;"
+            query = "SELECT * FROM usuarios WHERE email = %s;"
             cursor.execute(query, (email,))
             usuario = cursor.fetchone()
 
@@ -145,7 +145,7 @@ class ClientThread(threading.Thread):
                 cursor = conexao.cursor()
                 data_nasci = datetime.datetime.strptime(data_nascimento, '%d/%m/%Y').date()
 
-                query = "INSERT INTO usuarios (primeiro_nome, segundo_nome, email_ou_telefone, senha, data_nascimento) VALUES (%s, %s, %s, %s, %s);"
+                query = "INSERT INTO usuarios (first_name, second_name, email, senha, data_nascimento) VALUES (%s, %s, %s, %s, %s);"
                 cursor.execute(query, (first_name, second_name, email, senha_hash, data_nasci))
                 conexao.commit()
 
@@ -294,7 +294,7 @@ class ClientThread(threading.Thread):
 
             conexao = self.conectar_banco()
             cursor = conexao.cursor()
-            cursor.execute('select id from usuarios where email_ou_telefone = %s;', [email])
+            cursor.execute('select id from usuarios where email = %s;', [email])
             id_user = cursor.fetchone()
 
             if frequencia == 'Domingo':
@@ -340,7 +340,7 @@ class ClientThread(threading.Thread):
         conexao = mysql.connector.connect(
             host = "localhost",
             user = "root",
-            password = "031012Gui@",
+            password = "",
             database = "project_webScraping"
         )
         return conexao
