@@ -1,12 +1,13 @@
 Web Scraping de notícias com Python, Qt Designer e envio agendado de e-mail
 
-Visão geral
++++ Visão geral +++
+
 Este projeto fornece um aplicativo de web scraping em Python, combinado com a facilidade do design gráfico do Qt Designer, para coletar e visualizar notícias da web. Além disso, inclui a funcionalidade de envio de notícias programadas por e-mail aos usuários.
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Características principais
++++ Características principais +++
 
 Raspagem da Web em Python:
 Utilizando a linguagem Python e a biblioteca BeautifulSoup, o projeto realiza web scraping para extrair informações relevantes de sites de notícias. Isso fornece uma maneira eficiente de obter dados atualizados.
@@ -26,15 +27,22 @@ O projeto segue práticas éticas e legais, respeitando os termos de serviço do
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Como usar
++++ Como usar +++
 
 Clone o repositório: git clone https://github.com/AlisonVit17/trabalhoPythonDia28.git
+
 Instale as dependências: ---
-Execute a aplicação: python3 ServidorTrabalho1.py e
-em outro terminal python3 ClienteTrabalho1.py
+---> Execute a aplicação: python3 ServidorTrabalho1.py e
+---> em outro terminal python3 ClienteTrabalho1.py
+
 Personalize suas preferências e aproveite novidades personalizadas.
 
-Contribuições
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
++++ Contribuições +++
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir problemas, propor melhorias ou enviar solicitações pull.
 
