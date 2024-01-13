@@ -6,6 +6,104 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 
+################################## - // - ######################################
+def conectar_banco():
+
+    conexao = mysql.connector.connect(
+    host = "localhost",
+    user = "root",
+    password = "",
+    database = "project_webScraping"
+    )
+    return conexao
+# -- #
+def envia_Email(emai, news_text):
+    import email.message
+    msg = email.message.Message()
+    msg['From'] = 'alissonmarqueshm30@gmail.com'
+    msg['Subject'] = 'TRABALHO DE PYTHON'
+    msg['To'] = emai
+
+    msg.add_header('Content-Type', 'text/html')
+    msg.set_payload(news_text)
+
+    password = 'thrcsphizixlgcup'
+    s = smtplib.SMTP('smtp.gmail.com: 587')
+    s.starttls()
+    s.login(msg['From'], password)
+    s.sendmail(msg['From'], msg['To'], msg.as_string().encode('utf-8'))
+    print('Passei do enviar')
+# -- #
+def enviaEmails(listaNoticias, email):
+    news_text = ""
+    for noticias in listaNoticias:
+        if 'news' in noticias:
+            news = noticias['news']
+            if news:
+                for i, article in enumerate(news):
+                    news_text += f"Notícia {i + 1}:\n"
+                    news_text += f"Título: {article.get('title', 'N/A')}\n"
+                    news_text += f"Link: {article.get('url', 'N/A')}\n\n"
+                news_text += "\n\n"
+            else:
+                news_text +="Nenhuma notícia encontrada."
+        else:
+            news_text +="Nenhuma notícia encontrada."
+
+    if news_text != "":
+        self.envia_Email(email, news_text)
+# -- #
+def buscar_noticiasEmail()
+
+    hoje = date.today()
+    email = ""
+    
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+
+    query = 'select * from email_programado;'
+    cursor.execute(query, [])
+    programacoesDeEnvio = cursor.fetchall()
+    
+    for i in programacoesDeEnvio:
+        listaNoticias = []
+        quantInfo = []
+        assunto = []
+        idioma = []
+        for a in range(len(self.programacoesDeEnvio[i][0])):
+            if (hoje.weekday() == self.programacoesDeEnvio[i][3][a] or self.programacoesDeEnvio[i][3][a] == 7):
+                email = i
+                quantInfo.append(self.programacoesDeEnvio[i][1][a])
+                assunto.append(self.programacoesDeEnvio[i][0][a])
+                idioma.append(self.programacoesDeEnvio[i][2][a])
+
+        for a in range(len(quantInfo)):
+            print('Cheguei no dia')
+            if assunto[a]:
+                api_key = '1564acb7dbc747d3858772371c9fb9c1'
+                print(assunto[a], quantInfo[a], api_key)
+                url = f'https://api.worldnewsapi.com/search-news?text={assunto[a]}&number={quantInfo[a]}&api-key={api_key}'
+
+                if idioma[a] == "português":
+                    url += '&language=pt'
+                try:
+                    response = requests.get(url)
+
+                    if response.status_code == 200:
+                        listaNoticias.append(response.json())
+                    else:
+                        self.tela_02.news_display.setPlainText("Erro ao buscar notícias.")
+                        print('Não deu certo buscar a notícia')
+                except Exception as e:
+                    self.tela_02.news_display.setPlainText(f"Erro: {str(e)}")
+            else:
+                self.tela_02.news_display.setPlainText("Insira uma palavra-chave para buscar notícias.")
+
+        if listaNoticias != []:
+            print(i)
+            self.enviaEmails(listaNoticias, i)
+            print('Emails enviados com sucesso!')
+################################# - // - #######################################
 class ClientThread(threading.Thread):
 
     def __init__(self, conexao, clienteAddress):
@@ -90,7 +188,7 @@ class ClientThread(threading.Thread):
     def verificaLogin(self, email, senha):
 
         # senha_hash = senha.encode('utf-8')
-        conexao = self.conectar_banco()
+        conexao = conectar_banco()
         cursor = conexao.cursor()
         retorno = ''
         try:
@@ -123,7 +221,7 @@ class ClientThread(threading.Thread):
         return retorno
 
     def cadastrar(self, first_name, second_name, email, senha, data_nascimento):
-        conexao = self.conectar_banco()
+        conexao = conectar_banco()
 
         try:
             cursor = conexao.cursor()
@@ -220,7 +318,7 @@ class ClientThread(threading.Thread):
 
     def programarNoticias(self, keyword, quantidade, frequencia, section, email):
 
-            conexao = self.conectar_banco()
+            conexao = conectar_banco()
             cursor = conexao.cursor()
             cursor.execute('select id from Usuarios where email = %s;', [email])
             id_user = cursor.fetchone()
@@ -262,16 +360,6 @@ class ClientThread(threading.Thread):
     def enviarEmail(self, email, senha, noticias):
         print("entrou no enviar email")
         pass
-
-    def conectar_banco(self):
-
-        conexao = mysql.connector.connect(
-            host = "localhost",
-            user = "root",
-            password = "",
-            database = "project_webScraping"
-        )
-        return conexao
 
 
 host = ''
