@@ -313,15 +313,17 @@ class ClientThread(threading.Thread):
                 link = df['link'][i]
                 print(link)
 
-                # para ver se o link é uma URL válida
-                if not link.startswith('http'):
-                    link = 'https://news.google.com' + link
+                # condicao para verificar se a palavra-chave estah no tihtulo
+                if keyword.lower() in title.lower():
+                    # para ver se o link é uma URL válida
+                    if not link.startswith('http'):
+                        link = 'https://news.google.com' + link
 
-                # para remover caracteres especiais do link
-                link = link.encode('utf-8').decode('ascii', 'ignore')
+                    # para remover caracteres especiais do link
+                    link = link.encode('utf-8').decode('ascii', 'ignore')
 
-                newss = {'title': title, 'link': link}
-                matching_news.append(newss)
+                    newss = {'title': title, 'link': link}
+                    matching_news.append(newss)
 
             retorno = "1"
         except Exception as e:
