@@ -137,8 +137,46 @@ def buscar_noticiasEmail():
 ################################# - // - #######################################
 class ClientThread(threading.Thread):
 
+    '''
+    Esta classe representa um cliente conectado ao servidor
+
+    ...
+    Attributes
+    ----------
+    conexao: socket.socket()
+        responsável pela conexão do cliente com o servidor
+    clienteAddress: socket.socket()
+        responsável pela identificação do cliente
+    startEnd: threading.Event()
+        responsável por especificar se o cliente ainda está conectado
+
+    METHODS
+    -------
+    run()
+        Responsável por especificar o ciclo do cliente dentro do servidor
+    verificaLogin(email, senha)
+        Reponsável por verificar se o cliente está cadastrado na base de dados
+    cadastrar(first_name, second_name, email, senha, data_nascimento)
+        Responsável por cadastrar um cliente na base de dados
+    buscarNoticias(keyword, qntd_tela, section)
+        Responsável por buscar notícias com base em palavras-chaves dadas pelo cliente
+    exibir_noticias(noticias)
+        Responsável por enviar as notícias para o cliente
+    programarNoticias(keyword, quantidade, frequencia, section, email)
+        Responsável por cadastrar na base de dados as programações de envio por email
+    '''
     def __init__(self, conexao, clienteAddress):
 
+        '''
+        Parameters
+        ----------
+        conexao: socket.socket()
+            responsável pela conexão do cliente com o servidor
+        clienteAddress: socket.socket()
+            responsável pela identificação do cliente
+        startEnd: threading.Event()
+            responsável por especificar se o cliente ainda está conectado
+        '''
         super().__init__()
         self.conexao = conexao
         self.clienteAddress = clienteAddress
@@ -146,6 +184,18 @@ class ClientThread(threading.Thread):
 
     def run(self):
 
+        '''
+        Responsável pelo funcionamento das opções do cliente
+
+        Parameters
+        ----------
+        
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         try:
             while not self.startEnd.is_set():
                 print('Aguardando nova opção')
@@ -218,6 +268,24 @@ class ClientThread(threading.Thread):
 
     def verificaLogin(self, email, senha):
 
+        '''
+        Reponsável por verificar se o cliente está cadastrado na base de dados
+
+        Parameters
+        ----------
+        email: str
+            email informado pelo usuário conectado
+        senha: str
+            senha informada pelo usuário conectado
+            
+        Returns
+        -------
+        retorno: str
+            Reponsável por identificar a confirmação do login
+            
+        Raises
+        ------
+        '''
         # senha_hash = senha.encode('utf-8')
         conexao = conectar_banco()
         cursor = conexao.cursor()
@@ -254,6 +322,29 @@ class ClientThread(threading.Thread):
     def cadastrar(self, first_name, second_name, email, senha, data_nascimento):
         conexao = conectar_banco()
 
+        '''
+        Responsável por cadastrar um cliente na base de dados
+        
+        Parameters
+        ----------
+        first_name: str
+            Primeiro nome do cliente a ser cadastrado na base de dados
+        second_name: str
+            Segundo nome do cliente a ser cadastrado na base de dados
+        email: str
+            Email do cliente a ser cadastrado na base de dados
+        senha: str
+            Senha do cliente a ser cadastrado na base de dados
+        data_nascimento: str
+            Data de nascimento do cliente a ser cadastrado na base de dados
+            
+        Returns
+        -------
+            Retorno responsável por identificar o êxito da operação
+            
+        Raises
+        ------
+        '''
         try:
             cursor = conexao.cursor()
 
@@ -290,6 +381,25 @@ class ClientThread(threading.Thread):
             return '-1'
 
     def buscarNoticias(self, keyword, qntd_tela, section):
+
+        '''
+        Responsável por buscar notícias com base em palavras-chaves dadas pelo cliente
+
+        Parameters
+        ----------
+        keyword: str
+            Palavra chave da pesquisa web
+        qntdtela: int
+            Quantidade de notícias a serem retornadas
+        section: str
+            Seção em que a palavra chave será buscada
+        
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         # opcional - com a lib do googleNews, podemos acrescentar o periodo para nao pegar noticias tao antigas
         # acrescentar internamente, por nos mesmo , sem o usuario
         googlenews = GoogleNews(lang='pt', region='BR', period='7d')
@@ -339,7 +449,20 @@ class ClientThread(threading.Thread):
                 self.exibir_noticias(matching_news)
 
     def exibir_noticias(self, noticias):
+        '''
+        Responsável por enviar as notícias para o cliente
 
+        Parameters
+        ----------
+        noticias: []
+            Notícias a serem enviadas para o usuário
+        
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         if noticias:
             news_text = ""
             for news in noticias:
@@ -422,45 +545,67 @@ class ClientThread(threading.Thread):
 
     def programarNoticias(self, keyword, quantidade, frequencia, section, email):
 
-            conexao = conectar_banco()
-            cursor = conexao.cursor()
-            cursor.execute('select id from usuarios where email = %s;', [email])
-            id_user = cursor.fetchone()
+        '''
+        Responsável por cadastrar na base de dados as programações de envio por email
+     
+        Parameters
+        ----------
+        keyword: str
+            Palavra chave da pesquisa web
+        quantidade: str
+            Quantidade de notícias a serem retornadas
+        frequencia: str
+            Dia/dias da semana que será enviada as notícias
+        section: str
+            Seção em que a palavra chave será buscada
+        email: str
+            Email do usuário conectado
+            
+        Returns
+        -------
 
-            if frequencia == 'Domingo':
+        Raises
+        ------
+        '''
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute('select id from usuarios where email = %s;', [email])
+        id_user = cursor.fetchone()
 
-                frequencia = '0'
-            elif frequencia == 'Segunda-feira':
+        if frequencia == 'Domingo':
 
-                frequencia = '1'
-            elif frequencia == 'Terça-feira':
+            frequencia = '0'
+        elif frequencia == 'Segunda-feira':
 
-                frequencia = '2'
-            elif frequencia == 'Quarta-feira':
+            frequencia = '1'
+        elif frequencia == 'Terça-feira':
 
-                frequencia = '3'
-            elif frequencia == 'Quinta-feira':
+            frequencia = '2'
+        elif frequencia == 'Quarta-feira':
 
-                frequencia = '4'
-            elif frequencia == 'Sexta-feira':
+            frequencia = '3'
+        elif frequencia == 'Quinta-feira':
 
-                frequencia = '5'
-            elif frequencia == 'Sábado':
+            frequencia = '4'
+        elif frequencia == 'Sexta-feira':
 
-                frequencia = '6'
-            else:
+            frequencia = '5'
+        elif frequencia == 'Sábado':
 
-                frequencia = '7'
+            frequencia = '6'
+        else:
+
+            frequencia = '7'
                 
-            if id_user:
+        if id_user:
 
-                query = 'insert into email_programado(id_programado, dia, quant_info, noticias, id_users, section) values(default, %s, %s, %s, %s, %s);'
-                cursor.execute(query, [frequencia, quantidade, keyword, id_user[0], section])
-                self.conexao.send('1'.encode())#2
-            else:
+            query = 'insert into email_programado(id_programado, dia, quant_info, noticias, id_users, section) values(default, %s, %s, %s, %s, %s);'
+            cursor.execute(query, [frequencia, quantidade, keyword, id_user[0], section])
+            self.conexao.send('1'.encode())#2
+        else:
 
-                self.conexao.send('-1'.encode())#2
-                
+            self.conexao.send('-1'.encode())#2
+    
     def enviarEmail(self, email, senha, noticias):
         print("entrou no enviar email")
         pass

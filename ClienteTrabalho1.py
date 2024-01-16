@@ -8,7 +8,104 @@ from qdarkstyle import load_stylesheet_pyqt5
 class LoginPage(QMainWindow):
     _quantEmailsComProgramacoes = 0
 
+    '''
+    Esta classe representa um cliente que acessa o servidor
+
+    ...
+
+    Attributes
+    ----------
+    client_socket: socket.socket()
+        responsável pela conexão do cliente com o servidor
+    setWindowTitle: setWindowTitle()
+        Responsável pelo nome da página
+    setGeometry: setGeometry()
+        Responsável pelo tamanho da janela
+    stacked_widget: QStackedWidget()
+        Responsável pela mudança de janelas
+    setCentralWidget setCentralWidget()
+        Widget central da página, nele são mostradas as janelas
+    mainPage: QtWidget()
+        Primeira tela que será visualizada pelo cliente, nela são mostradas as
+        opções de login e de cadastro
+    cadastroPage: QtWidget()
+        Tela responsável pela captura dos dados de cadastro do cliente
+    tela_02: QtWidget()
+        Tela responsável pela captura de informações para a realização de uma
+        pesquisa, ou mesmo para a opção de programar envio
+    programarEnvio: QtWidget()
+        Tela responsável pela programação de envio por email
+    about_us: QtWidget()
+        Tela de aviso, responsável pela saída da aplcação
+    confirmaSaida: QtWidget()
+        Tela responsável pela confirmação de logout
+
+    METHODS
+    -------
+    setup_ui()
+        Responsável pelas configurações das telas, bem como suas funcionalidades
+    show()
+        Responsavel por mostrar a tela dos arquivos .ui
+    mostrar_cadastro()
+        Conexão responsável por mostrar a tela de cadastro
+    voltar_main_page()
+        Conexão responsável por mostrar a tela main do cliente
+    toggle_theme()
+        Conexão responsável por chamar o método de alteração da cor de fundo
+        da aplicação
+    apply_theme(theme_name: str)
+        Conexão responsável por alterar a cor de fundo da aplicação
+    callback_login()
+        Conexão responsável pelo login do usuário
+    callback_cadastro()
+        Conexão responsável pelo cadastro do usuário
+    buscar_noticiasTela()
+        Conexão responsável por mostrar para o cliente as notícias retornadas
+    programaEnvio()
+        Conexão responsável pela programação de envio por email
+    programarEnvioTela()
+        Conexão responsável por chamar a tela de programar envios para email
+    callback_exit()
+        Conexão responsável por sair da aplicação
+    about_uss()
+        Conexão responsável pela chamada de uma tela para confirmação da saída
+        da aplicação
+    confirmarSaida()
+        Conexão responsável pela chamada da tela de confirmação de logout
+    telaDeBusca()
+        Conexão responsável pela chamada da tela de pesquisas
+    '''
     def __init__(self, client_socket):
+
+        '''
+        Parameters
+        ----------
+        client_socket: socket.socket()
+            responsável pela conexão do cliente com o servidor
+        setWindowTitle: setWindowTitle()
+            Responsável pelo nome da página
+        setGeometry: setGeometry()
+            Responsável pelo tamanho da janela
+        stacked_widget: QStackedWidget()
+            Responsável pela mudança de janelas
+        setCentralWidget setCentralWidget()
+            Widget central da página, nele são mostradas as janelas
+        mainPage: QtWidget()
+            Primeira tela que será visualizada pelo cliente, nela são mostradas as
+            opções de login e de cadastro
+        cadastroPage: QtWidget()
+            Tela responsável pela captura dos dados de cadastro do cliente
+        tela_02: QtWidget()
+            Tela responsável pela captura de informações para a realização de uma
+            pesquisa, ou mesmo para a opção de programar envio
+        programarEnvio: QtWidget()
+            Tela responsável pela programação de envio por email
+        about_us: QtWidget()
+            Tela de aviso, responsável pela saída da aplcação
+        confirmaSaida: QtWidget()
+            Tela responsável pela confirmação de logout
+        '''
+        
         super().__init__()
         self.client_socket = client_socket
         self.setWindowTitle('Cadastro de Usuário')
@@ -28,6 +125,19 @@ class LoginPage(QMainWindow):
         self.apply_theme("Light")
 
     def setup_ui(self):
+
+        '''
+        Responsável pelas configurações das telas, bem como suas funcionalidades
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         self.stacked_widget.addWidget(self.mainPage)
         self.stacked_widget.addWidget(self.cadastroPage)
         self.stacked_widget.addWidget(self.tela_02)
@@ -65,26 +175,90 @@ class LoginPage(QMainWindow):
 
     def mostrar_cadastro(self):
 
+        '''
+        Método responsável por mostrar a tela de cadastro
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         self.stacked_widget.setCurrentIndex(1)
 
     def voltar_main_page(self):
-        
+
+        '''
+        Conexão responsável por mostrar a tela main do cliente
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''        
         self.stacked_widget.setCurrentIndex(0)
         self.mainPage.password.clear()
         self.mainPage.email_or_phone.clear()
 
     def toggle_theme(self):
+        '''
+        Conexão responsável por chamar o método de alteração da cor de fundo
+        da aplicação
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         selected_theme = self.mainPage.light_dark.currentText()
         self.apply_theme(selected_theme)
 
     def apply_theme(self, theme_name):
-        
+
+        '''
+        Conexão responsável por alterar a cor de fundo da aplicação
+
+        Parameters
+        ----------
+        theme_name: str
+            String com o nome do novo plano de fundo
+
+        Returns
+        -------
+
+        Raises
+        ------        
+        '''
         if theme_name == "Dark":
             self.setStyleSheet(load_stylesheet_pyqt5())
         else:
             self.setStyleSheet("")
 
     def callback_login(self):
+
+        '''
+        Conexão responsável pelo login do usuário
+
+        Parameters
+        ----------
+  
+        Returns
+        -------
+
+        Raises
+        ------        
+        '''
         opcao = '1'
         self.client_socket.send(opcao.encode())
 
@@ -119,6 +293,19 @@ class LoginPage(QMainWindow):
 
 
     def callback_cadastro(self):
+
+        '''
+        Conexão responsável pelo cadastro do usuário
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         opcao = '2'
         self.client_socket.send(opcao.encode())
 
@@ -175,6 +362,19 @@ class LoginPage(QMainWindow):
 
 
     def buscar_noticiasTela(self):
+
+        '''
+        Conexão responsável por mostrar na tela as notícias retornadas para o cliente
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         opcao = '3'
         self.client_socket.send(opcao.encode())
 
@@ -224,7 +424,19 @@ class LoginPage(QMainWindow):
         
 
     def programaEnvioEmail(self):
+        
+        '''
+        Conexão responsável pela programação de envio por email
 
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         quantidade = self.programarEnvio.qntdTela.currentText()
         keyword = self.programarEnvio.digitarInfo.text()
         frenquencia = self.programarEnvio.frequenciaEmails.currentText()
@@ -254,25 +466,86 @@ class LoginPage(QMainWindow):
         
     def programarEnvioTela(self):
 
+        '''
+        Conexão responsável por chamar a tela de programar envios para email
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         self.stacked_widget.setCurrentIndex(5)
 
     def callback_exit(self):
+
+        '''
+        Conexão responsável por sair da aplicação
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         opcao = '-1'
         self.client_socket.send(opcao.encode())
         self.client_socket.close()
         exit(1)
 
     def about_uss_funcao(self):
-        
+
+        '''
+        Conexão responsável pela chamada de uma tela para confirmação da saída
+        da aplicação
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         self.stacked_widget.setCurrentIndex(3)
 
     def confirmarSaidaFuncao(self):
 
+        '''
+        Conexão responsável pela chamada da tela de confirmação de logout
 
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        '''
         self.stacked_widget.setCurrentIndex(4)
         
     def telaDeBusca(self):
-        
+
+        '''
+        Conexão responsável pela chamada da tela de pesquisas
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------        
+        '''
         self.stacked_widget.setCurrentIndex(2)
 
 
